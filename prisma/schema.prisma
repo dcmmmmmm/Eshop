@@ -1,0 +1,275 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Các model sử dụng trong ứng dụng
+// Model User: Lưu thông tin người dùng
+// Model Account: Lưu thông tin tài khoản người dùng
+// Model Session: Lưu thông tin phiên đăng nhập của người dùng
+// Model VerificationToken: Lưu thông tin mã xác minh người dùng
+// Model Product: Lưu thông tin sản phẩm
+// Model Category: Lưu thông tin danh mục sản phẩm
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String    @unique
+  password      String
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+  phone         String?
+  address       String?
+  gender        String?
+  verifyToken   String?
+  resetToken    String?
+  resetTokenExp DateTime?
+  isActive      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  // Quan hệ với các model khác
+  orders        Order[]
+  accounts      Account[]
+  sessions      Session[]
+  reviews       Review[]
+  cart          Cart?
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+/**
+ * Các model sử dụng trong ứng dụng
+ * Model Product: Lưu thông tin sản phẩm
+ * Model Category: Lưu thông tin Loại sản phẩm
+ * Quan hệ giữa product và category:
+ * * Một sản phẩm có thể thuộc một danh mục
+ * * Một danh mục có thể có nhiều sản phẩm
+ * Model Brand: Lưu thông tin thương hiệu
+ * Quan hệ giữa product và brand:
+ * * Một sản phẩm có thể thuộc một thương hiệu
+ * * Một thương hiệu có thể có nhiều sản phẩm
+ * Quan hệ giữa category và brand:
+ * * Một danh mục có thể thuộc một thương hiệu
+ * * Một thương hiệu có thể có nhiều danh mục
+ */
+
+// Model Product
+enum ProductStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+model Product {
+  id                      String        @id @default(auto()) @map("_id") @db.ObjectId
+  name                    String
+  slug                    String        @unique
+  technicalSpecifications String
+  description             String
+  image                   String?
+  stock                   Int
+  status                  ProductStatus @default(AVAILABLE)
+  price                   Float
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  // Quan hệ với các model khác
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+  reviews    Review[]
+  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoryId String?     @db.ObjectId
+  brandId    String?     @db.ObjectId
+  brand      Brand?      @relation(fields: [brandId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+// Model Category
+model Category {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String          @unique
+  name        String
+  image       String?
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  // Thêm quan hệ mới
+  products    Product[]
+  brands      BrandCategory[]
+}
+
+model Brand {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String          @unique
+  image       String?
+  description String?
+  products    Product[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  // Mỗi quan hệ
+  categories  BrandCategory[]
+}
+
+// Model trung gian để tạo quan hệ nhiều-nhiều
+model BrandCategory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  slug        String
+  brandId     String   @db.ObjectId
+  categoryId  String   @db.ObjectId
+  brand       Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([brandId, categoryId])
+}
+
+// Model Coupon
+model Coupon {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  code      String   @unique
+  discount  Float
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPING
+  DELIVERED
+  CANCELED
+}
+
+model Order {
+  id               String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String      @db.ObjectId
+  user             User        @relation(fields: [userId], references: [id])
+  status           String      @default("PENDING") // PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED
+  total            Float
+  shippingMethod   String
+  paymentMethod    String
+  shippingAddress  String
+  shippingCity     String
+  shippingDistrict String
+  shippingWard     String
+  recipientName    String
+  recipientPhone   String
+  recipientEmail   String
+  items            OrderItem[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
+  amount    Float
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String     @unique @db.ObjectId
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cartId    String   @db.ObjectId
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model Review {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Int // Số sao đánh giá (1-5)
+  comment   String // Nội dung đánh giá
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Quan hệ với User và Product
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([userId, productId]) // Mỗi user chỉ được đánh giá một sản phẩm một lần
+}
