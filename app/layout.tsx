@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   description: "Nơi bán đồ công nghệ online uy tín",
 };
 
+import { Suspense } from 'react';
+import Loading from './loading';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +39,9 @@ export default function RootLayout({
       <AuthProvider>
         <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         <Toaster/>
-        {children}
+        <Suspense fallback={<Loading />}>
+          {children}
+        </Suspense>
       </AuthProvider>
       </body>
     </html>
