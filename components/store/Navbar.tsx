@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname} from 'next/navigation';
 import {
@@ -33,6 +33,28 @@ interface Category {
 const getRandomProducts = (products: Product[] = [], count: number = 5) => {
   const shuffled = [...products].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
+};
+
+// Tách phần Categories thành component riêng
+const Categories = ({ categories }: { categories: Category[] }) => {
+  return (
+    <div className="hidden lg:group-hover:grid absolute left-0 grid-cols-1 lg:grid-cols-5 gap-4 w-full lg:w-[1000px] p-4 bg-white shadow-lg border rounded-lg">
+      {categories.map((category) => (
+        <div key={category.id}>
+          <Link href={`/category/${category.slug}`} className="font-bold text-blue-600 mb-2">{category.name}</Link>
+          <ul className="space-y-2">
+            {getRandomProducts(category.products, 5).map((product) => (
+              <li key={product.id}>
+                <Link href={`/product/${product.slug}`} className="text-gray-600 hover:text-blue-600">
+                  {product.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export default function Navbar({ mobileMenuOpen, setMobileMenuOpen }: { mobileMenuOpen: boolean; setMobileMenuOpen: (open: boolean) => void }) {
@@ -204,22 +226,9 @@ export default function Navbar({ mobileMenuOpen, setMobileMenuOpen }: { mobileMe
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  <div className="hidden lg:group-hover:grid absolute left-0 grid-cols-1 lg:grid-cols-5 gap-4 w-full lg:w-[1000px] p-4 bg-white shadow-lg border rounded-lg">
-                    {categories.map((category) => (
-                      <div key={category.id}>
-                        <Link href={`/category/${category.slug}`} className="font-bold text-blue-600 mb-2">{category.name}</Link>
-                        <ul className="space-y-2">
-                          {getRandomProducts(category.products, 5).map((product) => (
-                            <li key={product.id}>
-                              <Link href={`/product/${product.slug}`} className="text-gray-600 hover:text-blue-600">
-                                {product.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <Categories categories={categories} />
+                  </Suspense>
                 </div>
                 <Link href="/new" className={`px-3 py-4 hover:text-blue-600 border-b lg:border-b-0 ${isActive('/tin-tuc')}`}>Tin tức</Link>
                 <Link href="/review" className={`px-3 py-4 hover:text-blue-600 border-b lg:border-b-0 ${isActive('/review')}`}>Review</Link>
