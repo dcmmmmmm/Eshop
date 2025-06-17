@@ -2,7 +2,9 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 import {prisma} from "@/lib/prisma";
-
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);

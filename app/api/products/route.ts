@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 // GET: Lấy danh sách tất cả sản phẩm
 export async function GET() {
   try {

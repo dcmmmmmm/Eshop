@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 // GET: Lấy tất cả đánh giá của một sản phẩm
 export async function GET(
   request: Request,
