@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 import { sendResetPasswordEmail } from "@/lib/email";
 
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
