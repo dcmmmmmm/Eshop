@@ -1,10 +1,18 @@
 "use client";
 export const dynamic = 'force-dynamic'
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 
+
 export default function ForgotPasswordPage() {
+  <Suspense fallback={<div>Loading...</div>}>
+    return <ForgotPassword />;
+  </Suspense>
+}
+
+
+function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
