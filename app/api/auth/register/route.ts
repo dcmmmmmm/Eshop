@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/email";
@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const { email, password, name, image, role, phone, gender } = await req.json();
 
