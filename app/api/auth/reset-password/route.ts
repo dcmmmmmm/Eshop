@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store';
-export const revalidate = 0;
+
 export async function POST(req: NextRequest) {
   try {
     const { token, password } = await req.json();
