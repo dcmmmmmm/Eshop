@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
@@ -9,6 +9,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function LoginPage() {
+  <Suspense fallback={<div>Loading...</div>}>
+    return <Login />;
+  </Suspense>
+}
+
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
