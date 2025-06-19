@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 import { UploadDropzone } from "@/utils/uploadthing";
 
 export default function RegisterAdminPage() {
+  <Suspense fallback={<div>Loading...</div>}>
+    return <RegisterAdmin />;
+  </Suspense>
+}
+
+function RegisterAdmin() {
   const [imageUrl, setImageUrl] = useState('')
   const [role, setRole] = useState('USER');
   const [name, setName] = useState('');

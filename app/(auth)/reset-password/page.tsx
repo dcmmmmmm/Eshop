@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
 export default function ResetPasswordPage() {
+  <Suspense fallback={<div>Loading...</div>}>
+    return <ResetPassword />;
+  </Suspense>
+}
+
+function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
