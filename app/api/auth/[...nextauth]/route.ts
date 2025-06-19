@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { Adapter } from "next-auth/adapters";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
